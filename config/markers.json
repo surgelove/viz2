@@ -1,0 +1,46 @@
+{
+  "-price": {
+    "symbol": "square",
+    "size": 10,
+    "color": "red"
+  },
+  "price": {
+    "symbol": "square",
+    "size": 10,
+    "color": "rgba(255,0,0,0)",
+    "line": {
+      "color": "blue",
+      "width": 2
+    }
+  },
+    "caca": {
+    "symbol": "circle",
+    "size": 2,
+    "color": "black"
+  },
+  "aspr_min_price": {
+    "symbol": "circle",
+    "size": 1,
+    "color": "green"
+  },
+  "aspr_max_price": {
+    "symbol": "circle",
+    "size": 1,
+    "color": "red"
+  },
+  "base_cross_price": {
+    "symbol": "cross",
+    "size": 6,
+    "color": "black"
+  },
+  "base_signal_dn": {
+    "symbol": "triangle-down",
+    "size": 6,
+    "color": "black"
+  },
+  "base_signal_up": {
+    "symbol": "triangle-up",
+    "size": 6,
+    "color": "black"
+  }
+}

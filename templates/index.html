@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>viz2 - instruments</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .instrument { border: 1px solid #ccc; padding: 12px; margin: 12px 0; }
+    .chart { width: 800px; height: 300px; }
+  </style>
+</head>
+<body>
+  <h1>Instruments</h1>
+  <div id="content">Loading...</div>
+
+  <script>
+    async function fetchData(){
+      const res = await fetch('/api/data');
+      const data = await res.json();
+      return data;
+    }
+
+    function render(resp){
+      const c = document.getElementById('content');
+      c.innerHTML = '';
+      const data = resp.instruments || {};
+      const configs = resp.configs || {};
+      const lineCfg = configs.lines || {};
+      const modeCfg = configs.modes || {};
+      const axisCfg = configs.axes || {};
+      const tooltipCfg = configs.tooltip || { fields: [] };
+
+      for(const inst of Object.keys(data)){
+        const group = data[inst];
+        const div = document.createElement('div');
+        div.className = 'instrument';
+        const h = document.createElement('h2');
+        h.textContent = inst;
+        div.appendChild(h);
+
+        const canvas = document.createElement('canvas');
+        canvas.className = 'chart';
+        canvas.id = 'chart-'+inst;
+        div.appendChild(canvas);
+
+        // table of other fields
+        const table = document.createElement('table');
+        const headerRow = document.createElement('tr');
+        const sample = group.records[0] || {};
+        for(const key of Object.keys(sample)){
+          const th = document.createElement('th');
+          th.textContent = key;
+          headerRow.appendChild(th);
+        }
+        table.appendChild(headerRow);
+
+        for(const r of group.records){
+          const row = document.createElement('tr');
+          for(const key of Object.keys(sample)){
+            const td = document.createElement('td');
+            td.textContent = r[key];
+            row.appendChild(td);
+          }
+          table.appendChild(row);
+        }
+        div.appendChild(table);
+
+        c.appendChild(div);
+
+        // build chart: one dataset per numeric series
+        const ctx = canvas.getContext('2d');
+        const datasets = [];
+        const colors = ['blue','red','green','orange','purple','brown','cyan','magenta'];
+        let colorIdx = 0;
+        for(const s of group.chart.series){
+          // allow config to override color/width/axis
+          const lineConf = (lineCfg && lineCfg[s.field]) || {};
+          const axis = (axisCfg && axisCfg[s.field]) || 'y';
+          const mode = (modeCfg && modeCfg[s.field]) || 'lines';
+          if(!s.is_numeric) continue; // skip non-numeric fields for plotting
+          const color = lineConf.color || colors[colorIdx % colors.length];
+          const width = lineConf.width || 1;
+          datasets.push({
+            label: s.field,
+            data: s.values,
+            borderColor: color,
+            borderWidth: width,
+            yAxisID: axis,
+            fill: false,
+            hidden: lineConf.hidden || false,
+          });
+          colorIdx += 1;
+        }
+
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: group.chart.timestamps,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            interaction: { mode: 'nearest', axis: 'x', intersect: false },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(ctx){
+                    const field = ctx.dataset.label;
+                    return field+': '+ctx.formattedValue;
+                  },
+                  title: function(items){
+                    // show timestamp plus configured tooltip fields for the point
+                    const idx = items[0].dataIndex;
+                    const ts = group.chart.timestamps[idx];
+                    const parts = [ts];
+                    for(const f of tooltipCfg.fields || []){
+                      if(f === 'timestamp') continue;
+                      const val = group.records[idx][f];
+                      parts.push(f+': '+val);
+                    }
+                    return parts;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    (async ()=>{
+      try{
+        const d = await fetchData();
+        render(d);
+      }catch(e){
+        document.getElementById('content').textContent = 'Error loading data: '+e;
+      }
+    })();
+  </script>
+</body>
+</html>

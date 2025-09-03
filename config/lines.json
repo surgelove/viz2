@@ -1,0 +1,38 @@
+{
+  "price": {
+    "width": 2,
+    "dash": null,
+    "color": "lightgray"
+  },
+  "spread_pips": {
+    "width": 1,
+    "dash": null,
+    "color": "lightgray"
+  },
+  "ema_short": {
+    "width": 0.5,
+    "dash": null,
+    "color": "blue"
+  },
+  "ema_long": {
+    "width": 1,
+    "dash": null,
+    "color": "purple"
+  },
+  "random_0_5": {
+    "width": 1,
+    "dash": null,
+    "color": "pink"
+  },
+  "base_ema": {
+    "width": 1,
+    "dash": null,
+    "color": "blue"
+  },
+  "base_tema": {
+    "width": 1,
+    "dash": null,
+    "color": "purple"
+  }
+
+}
